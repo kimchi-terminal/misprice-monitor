@@ -495,7 +495,7 @@ body::after {
   const canvas  = document.getElementById('tickCanvas');
   const rangeEl = document.getElementById('tick-range');
 
-  const API_BASE = '';  // proxied via Vercel /api/ticks
+  const API_BASE = 'http://3.252.249.167:7701';
   const ASSET    = 'BTC';
   const N        = 52;
   const POLL_MS  = 2000;
@@ -542,7 +542,7 @@ body::after {
 
   async function fetchTicks(){
     try {
-      const res  = await fetch(`/api/ticks?asset=${ASSET}&n=${N}`,
+      const res  = await fetch(`${API_BASE}/ticks?asset=${ASSET}&n=${N}`,
                                { signal: AbortSignal.timeout(1800) });
       const data = await res.json();
       if(data.ticks && data.ticks.length > 0){
@@ -632,6 +632,9 @@ body::after {
       }, reconnectDelay);
     };
   }
+
+  connect();
+})();
 
 // ─── SUPABASE BOT STATUS POLLER ────────────────────────────────────────────
 // Drop your anon key below — project kjepkcfqyvdsnzgmvijp (ap-northeast-1)
