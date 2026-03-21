@@ -582,50 +582,6 @@ body::after {
   requestAnimationFrame(draw);
   fetchTicks();
   setInterval(fetchTicks, POLL_MS);
-// ─── SKEW-USD TRADE HISTORY ──────────────────────────────────
-(async function loadSkewTrades(){
-  const SB_SKEW_URL = 'https://aarvvkamhveoteppjali.supabase.co';
-  const SB_SKEW_KEY = 
-'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhcnZ2a2FtaHZlb3RlcHBqYWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NDI3ODIsImV4cCI6MjA4NzMxODc4Mn0.OdFeskg53UrwCjcJodze0pH9axntZTWrD3yr2yQAVVI';
-
-  try {
-    const res = await fetch(
-      `${SB_SKEW_URL}/rest/v1/skew_trades?select=*&order=created_at.desc&limit=50`,
-      { headers: { 'apikey': SB_SKEW_KEY, 'Authorization': 'Bearer ' + SB_SKEW_KEY } }
-    );
-    const trades = await res.json();
-    if (!trades?.length) return;
-
-    const closed  = trades.filter(t => t.outcome);
-    const wins    = closed.filter(t => t.outcome === 'WIN').length;
-    const pnl     = closed.reduce((a,t) => a + (parseFloat(t.pnl)||0), 0);
-    const wr      = closed.length ? (wins/closed.length*100).toFixed(1) : '--';
-
-    // wire into status bar
-    const skewDot  = document.getElementById('sd-skewusd');
-    const skewVal  = document.getElementById('sv-skewusd');
-    const skewMeta = document.getElementById('sm-skewusd');
-    if (skewDot)  skewDot.style.background  = '#1a6040';
-    if (skewVal)  skewVal.textContent        = 'WR ' + wr + '%';
-    if (skewMeta) skewMeta.textContent       = closed.length + ' trades · P&L ' + (pnl>=0?'+':'') + '$' + pnl.toFixed(2);
-
-    // populate feed rows if element exists
-    const feedEl = document.getElementById('feedRows');
-    if (feedEl) {
-      feedEl.innerHTML = trades.slice(0,10).map(t => {
-        const time  = new Date(t.created_at).toISOString().slice(11,16);
-        const asset = (t.slug||'').split('-')[0].toUpperCase();
-        const dir   = t.direction === 'UP' ? '▲' : '▼';
-        const ps    = t.pnl ? (parseFloat(t.pnl)>=0?'+$':'-$')+Math.abs(parseFloat(t.pnl)).toFixed(2) : 'open';
-        const col   = t.outcome==='WIN'?'#1a6040':t.outcome==='LOSS'?'#8b1a0e':'#C9892E';
-        return `<div style="font-size:9px;padding:2px 0;border-bottom:1px solid rgba(200,184,152,.2);color:${col}">${time} ${asset} ${dir} 
-${t.signal_type||''} ${ps}</div>`;
-      }).join('');
-    }
-  } catch(e) { console.warn('skew fetch:', e.message); }
-
-  setInterval(loadSkewTrades, 30000);
-
   window.addEventListener('resize', draw);
 })();
 
@@ -707,11 +663,10 @@ ${t.signal_type||''} ${ps}</div>`;
 // Drop your anon key below — project kjepkcfqyvdsnzgmvijp (ap-northeast-1)
 (function(){
   const SUPABASE_URL = 'https://kjepkcfqyvdsnzgmvijp.supabase.co';
-  const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXBrY2ZxeXZkc256Z212aWpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MzMzNjAsImV4cCI6MjA4NzEwOTM2MH0.MH3YYDVH-gjydCVtlG8TlR-unUriw-jVfq1EYX61ORc'; 
-// ← paste key // skew-usd trades — separate project
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXBrY2ZxeXZkc256Z212aWpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE1MzMzNjAsImV4cCI6MjA4NzEwOTM2MH0.MH3YYDVH-gjydCVtlG8TlR-unUriw-jVfq1EYX61ORc';
   const SB_SKEW_URL = 'https://aarvvkamhveoteppjali.supabase.co';
   const SB_SKEW_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhcnZ2a2FtaHZlb3RlcHBqYWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NDI3ODIsImV4cCI6MjA4NzMxODc4Mn0.OdFeskg53UrwCjcJodze0pH9axntZTWrD3yr2yQAVVI';
-
+  const ANON_KEY     = 'YOUR_ANON_KEY_HERE'; // ← paste key
   const POLL_MS      = 4000;
 
   const bots = {
